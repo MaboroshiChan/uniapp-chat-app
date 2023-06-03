@@ -91,7 +91,7 @@
 							style="font-size: 24rpx;width: 750rpx;position: absolute;left: 0;text-align: center;">{{item.time}}</text>
 
 						<image class="avatar" :class="[item.isMe? 'is-me': 'avatar-right']" :src="item.avatar"
-							mode="aspectFill" @longpress="todel2(index)"></image>
+							mode="aspectFill" @longpress="todel2(index)" v-if="target!='prompt'"></image>
 						<view class="message-box" style="position: relative;" :class="{'is-me': item.isMe}">
 
 							<view class="message" :class="item.target" v-if="item.type !== 2">
@@ -99,7 +99,8 @@
 									{{item.content || ''}}
 								</view>
 								<view class=""
-									style="display: flex;justify-content: flex-end;align-items: center;color: #555" v-if="item.target != 'prompt'">
+									style="display: flex;justify-content: flex-end;align-items: center;color: #555"
+									v-if="item.target == 'red'">
 									<view class=""
 										style="display: flex;justify-content: flex-start;align-items: center;"
 										@click="tofuzhi(item.content)">
@@ -147,7 +148,8 @@
 
 					<input class="input-text" type="text" :value="inputValue" placeholder="输入聊天记录" @input="getInput">
 
-					<view :class="promptMode? 'send-input-prompt': 'send-input'" @tap="promptMode? sendPrompt(): newsSend(1)">发送</view>
+					<view :class="promptMode? 'send-input-prompt': 'send-input'"
+						@tap="promptMode? sendPrompt(): newsSend(1)">发送</view>
 				</view>
 			</view>
 		</view>
@@ -340,7 +342,7 @@
 					fromname: '自己的用户名',
 					toname: '对方的用户名',
 					isMe: true,
-					target: "active1"
+					target: "blue"
 				};
 				uni.sendSocketMessage({
 					data: JSON.stringify(message),
@@ -372,7 +374,7 @@
 					fromname: '自己的用户名',
 					toname: '对方的用户名',
 					isMe: false,
-					target: "active"
+					target: "red"
 				};
 				uni.sendSocketMessage({
 					data: JSON.stringify(message),
@@ -398,7 +400,7 @@
 				}, 500)
 
 			},
-			
+
 			setScrollTop() {
 				this.$nextTick(() => {
 					let scrollView = uni.createSelectorQuery().select('.scroll-view');
@@ -410,13 +412,13 @@
 					}).exec();
 				});
 			},
-			
+
 			addPrompt() {
 				this.promptMode = true;
 				// activate the text box
 			},
 
-			sendPrompt(type){
+			sendPrompt(type) {
 				var message = {
 					type: "say",
 					message_type: type,
@@ -428,8 +430,22 @@
 					isMe: false,
 					target: "prompt"
 				}
-				this.list = this.list.concat([message])
-				
+				uni.sendSocketMessage({
+					data: JSON.stringify(message),
+					complete: (res) => {
+						let newsKey = 'content';
+						Object.defineProperty(message, newsKey, Object.getOwnPropertyDescriptor(message,
+							'data'))
+						message["type"] = 1;
+						message["time"] = "";
+						message["room"] = this.room;
+						message["avatar"] = ''; // 自己的头像
+						delete message['data'];
+						this.list = this.list.concat([message])
+						this.inputValue = "";
+					}
+				});
+				this.setScrollTop();
 				// ...
 				this.promptMode = false;
 			}
@@ -548,14 +564,18 @@
 		padding: 0 15px;
 	}
 
-	.active {
+	.red {
 		background-color: skyblue;
 	}
-	
+
+	.prompt-box {
+		background-color: #f5f5f5;
+	}
+
 	.prompt {
 		display: inline-block;
 		word-wrap: break-word;
-		position:relative;
+		position: relative;
 		background-color: lightsteelblue;
 		border-radius: 10px;
 		opacity: 50%;
@@ -565,7 +585,6 @@
 		text-align: center;
 		left: 34%;
 		top: 30px;
-		float: center;
 	}
 
 	.send-input1 {
@@ -577,7 +596,7 @@
 		color: #FFFFFF;
 	}
 
-	.active1 {
+	.blue {
 		background-color: lightpink;
 	}
 
@@ -589,7 +608,7 @@
 		border-radius: 8px;
 		color: #FFFFFF;
 	}
-	
+
 	.send-input-prompt {
 		width: 18%;
 		line-height: 35px;
@@ -657,9 +676,9 @@
 		float: right;
 		margin-left: 10px;
 	}
-	
-	.is-prompt{
-		float: center;
+
+	.is-prompt {
+		left: 50%;
 		margin-left: 10px;
 	}
 </style>
