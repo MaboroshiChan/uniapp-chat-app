@@ -94,12 +94,12 @@
 							mode="aspectFill" @longpress="todel2(index)"></image>
 						<view class="message-box" style="position: relative;" :class="{'is-me': item.isMe}">
 
-							<view class="message" :class="item.isMe ?'active1' :'active'" v-if="item.type !== 2">
+							<view class="message" :class="item.target" v-if="item.type !== 2">
 								<view class="">
 									{{item.content || ''}}
 								</view>
 								<view class=""
-									style="display: flex;justify-content: flex-end;align-items: center;color: #555">
+									style="display: flex;justify-content: flex-end;align-items: center;color: #555" v-if="item.target != 'prompt'">
 									<view class=""
 										style="display: flex;justify-content: flex-start;align-items: center;"
 										@click="tofuzhi(item.content)">
@@ -119,7 +119,8 @@
 										</text>
 									</view>
 									<view class=""
-										style="display: flex;justify-content: flex-start;align-items: center;" @click="tosc()">
+										style="display: flex;justify-content: flex-start;align-items: center;"
+										@click="tosc()">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/0/3.png"
 											mode="widthFix"></image>
 										<text class="">
@@ -133,6 +134,9 @@
 							</image>
 						</view>
 					</view>
+					<view class="prompt" @tap="addPrompt()">
+						点击输入提示语
+					</view>
 				</view>
 			</scroll-view>
 
@@ -141,10 +145,9 @@
 					<!-- <view class="send-image iconfont icon-icon" @tap="tapTo(1)"></view> -->
 					<view class="send-input1" @tap="newsSend1(1)">发送</view>
 
-					<input class="input-text" type="text" :value="inputValue" placeholder="输入聊天记录" @input="getInput"
-						@confirm="tapTo(2)">
+					<input class="input-text" type="text" :value="inputValue" placeholder="输入聊天记录" @input="getInput">
 
-					<view class="send-input" @tap="tapTo(2)">发送</view>
+					<view :class="promptMode? 'send-input-prompt': 'send-input'" @tap="promptMode? sendPrompt(): newsSend(1)">发送</view>
 				</view>
 			</view>
 		</view>
@@ -172,7 +175,8 @@
 					room: 1535789553696,
 					value: '新聊天'
 				}],
-				room: 0
+				room: 0,
+				promptMode: false
 			}
 		},
 		computed: {
@@ -217,38 +221,29 @@
 			},
 			tofuzhi(value) {
 				//提示模板
-				uni.showModal({
-					content: "请问是否复制当前消息", //模板中提示的内容
-					confirmText: '复制内容',
-					success: () => { //点击复制内容的后调函数
-						//uni.setClipboardData方法就是讲内容复制到粘贴板
-						uni.setClipboardData({
-							data: value, //要被复制的内容
-							success: () => { //复制成功的回调函数
-								uni.showToast({ //提示
-									title: '复制成功'
-								})
-							}
-						});
+				uni.setClipboardData({
+					data: value, //要被复制的内容
+					success: () => { //复制成功的回调函数
+						uni.showToast({ //提示
+							title: '复制成功'
+						})
 					}
 				});
-
-
 			},
 			tosc() {
-				
+
 				uni.showModal({
-					content: "请问是否重新生成", 
+					content: "请问是否重新生成",
 					confirmText: '重新生成',
-					success: () => { 
-						
+					success: () => {
+
 						uni.showLoading({
 							title: '生成中'
 						})
 					}
 				});
-			
-			
+
+
 			},
 
 			toadd() {
@@ -344,7 +339,8 @@
 					data: type !== 2 ? this.inputValue : this.image,
 					fromname: '自己的用户名',
 					toname: '对方的用户名',
-					isMe: true
+					isMe: true,
+					target: "active1"
 				};
 				uni.sendSocketMessage({
 					data: JSON.stringify(message),
@@ -375,7 +371,8 @@
 					data: this.inputValue,
 					fromname: '自己的用户名',
 					toname: '对方的用户名',
-					isMe: false
+					isMe: false,
+					target: "active"
 				};
 				uni.sendSocketMessage({
 					data: JSON.stringify(message),
@@ -401,8 +398,7 @@
 				}, 500)
 
 			},
-
-
+			
 			setScrollTop() {
 				this.$nextTick(() => {
 					let scrollView = uni.createSelectorQuery().select('.scroll-view');
@@ -413,9 +409,30 @@
 						this.scrollHeight = height;
 					}).exec();
 				});
+			},
+			
+			addPrompt() {
+				this.promptMode = true;
+				// activate the text box
+			},
+
+			sendPrompt(type){
+				var message = {
+					type: "say",
+					message_type: type,
+					fromid: 1,
+					toid: 3,
+					data: type !== 2 ? this.inputValue : this.image,
+					fromname: '自己的用户名',
+					toname: '对方的用户名',
+					isMe: false,
+					target: "prompt"
+				}
+				this.list = this.list.concat([message])
+				
+				// ...
+				this.promptMode = false;
 			}
-
-
 		}
 	}
 </script>
@@ -534,6 +551,22 @@
 	.active {
 		background-color: skyblue;
 	}
+	
+	.prompt {
+		display: inline-block;
+		word-wrap: break-word;
+		position:relative;
+		background-color: lightsteelblue;
+		border-radius: 10px;
+		opacity: 50%;
+		background-size: 500px;
+		width: 180px;
+		height: 30px;
+		text-align: center;
+		left: 34%;
+		top: 30px;
+		float: center;
+	}
 
 	.send-input1 {
 		width: 18%;
@@ -555,6 +588,15 @@
 		background-color: lightpink;
 		border-radius: 8px;
 		color: #FFFFFF;
+	}
+	
+	.send-input-prompt {
+		width: 18%;
+		line-height: 35px;
+		text-align: center;
+		background-color: whitesmoke;
+		border-radius: 8px;
+		color: #333;
 	}
 
 	.scroll-view,
@@ -613,6 +655,11 @@
 
 	.is-me {
 		float: right;
+		margin-left: 10px;
+	}
+	
+	.is-prompt{
+		float: center;
 		margin-left: 10px;
 	}
 </style>
