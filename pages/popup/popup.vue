@@ -92,9 +92,11 @@
 
 						<image class="avatar" :class="[item.isMe? 'is-me': 'avatar-right']" :src="item.avatar"
 							mode="aspectFill" @longpress="todel2(index)" v-if="target!='prompt'"></image>
-						<view class="message-box" style="position: relative;" :class="{'is-me': item.isMe}">
-
+							
+						<view class="message-box" style="position: relative;" :class="item.target=='prompt-box'? 'is-prompt' : {'is-me': item.isMe}">
+	
 							<view class="message" :class="item.target" v-if="item.type !== 2">
+								
 								<view class="">
 									{{item.content || ''}}
 								</view>
@@ -428,7 +430,7 @@
 					fromname: '自己的用户名',
 					toname: '对方的用户名',
 					isMe: false,
-					target: "prompt"
+					target: "prompt-box"
 				}
 				uni.sendSocketMessage({
 					data: JSON.stringify(message),
@@ -569,7 +571,7 @@
 	}
 
 	.prompt-box {
-		background-color: #f5f5f5;
+		background-color: #FFB967;
 	}
 
 	.prompt {
@@ -678,7 +680,12 @@
 	}
 
 	.is-prompt {
-		left: 50%;
-		margin-left: 10px;
+		left: 35%;
+		text-align: center;
+		margin-left: auto;
+		margin-right: auto;
+		display: inline-block;
+		text-align: center;
+		align-items: center;
 	}
 </style>
