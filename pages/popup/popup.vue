@@ -212,9 +212,6 @@ export default {
 					//修改做后一个message
 					let lastMessageIndex = this.list.length - 1;
 					//this.list[lastMessageIndex].isResponding = true;
-					console.log("type: " + typeof(res.data));
-					console.log(res);
-					console.log("data: " + res.data);
 					
 					const msg = res.data.text;
 					
@@ -464,9 +461,6 @@ export default {
 			// ...
 			this.promptMode = false;
 		},
-
-
-
 	}
 }
 </script>
