@@ -699,8 +699,8 @@ export default {
 }
 .cursor {
 	display: inline-block;
-	width: 10px;
-	height: 20px;
+	width: 5px;
+	height: 15px;
 	background-color: #000;
   }
 </style>
