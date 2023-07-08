@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #chat-container {
+      height: 400px;
+      overflow: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      position: relative;
+    }
+    #response-output {
+      display: inline-block;
+      cursor: text;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      background-color: #000;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+  </style>
+  <script>
+    function addResponse(response) {
+      var chatContainer = document.getElementById("chat-container");
+      var responseOutput = document.createElement("p");
+      responseOutput.classList.add("response");
+      responseOutput.innerHTML = response + '<span class="cursor"></span>';
+      chatContainer.appendChild(responseOutput);
+    }
+  </script>
+</head>
+<body>
+  <div id="chat-container">
+    <p>Welcome to the Chat Room:</p>
+  </div>
+  
+  <script>
+    // Example usage
+    addResponse("Hello there!");
+    addResponse("How can I assist you?");
+  </script>
+</body>
+</html>
