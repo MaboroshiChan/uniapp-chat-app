@@ -336,21 +336,38 @@ var _currentDate = _interopRequireDefault(__webpack_require__(/*! @/common/util/
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 var _default = {
   data: function data() {
     return {
       type: 'center',
+      chat_name: '新聊天',
       value: '',
       xiugai: '',
       inputValue: '',
-      list: [],
+      all_messages: [{
+        content: "你好嘛",
+        isMe: true,
+        target: "blue",
+        room: 1535789553697,
+        avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg' // 自己的头像,
+      }, {
+        content: "你是谁嘛",
+        isMe: true,
+        target: "blue",
+        room: 1535789553697,
+        avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg' // 自己的头像,
+      }, {
+        content: "",
+        isMe: false,
+        target: "red",
+        isResponse: true,
+        room: 1535789553697,
+        avatar: '/static/logo.png',
+        up_or_down: null,
+        cached_msg: ["你很好吗?", "这是什么呢", "好奇怪呢", "我也很好奇", "你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛"],
+        current_msg_index: 0
+      }],
+      messages: [],
       image: '',
       scrollHeight: 0,
       now: '',
@@ -361,8 +378,8 @@ var _default = {
         room: 1535789553697,
         value: '演示1'
       }],
-      room: 0,
       promptMode: false,
+      room: 0,
       wendata: 'This is for a test purpose, you can change it to any value',
       wen: ''
     };
@@ -379,13 +396,39 @@ var _default = {
     }
   },
   mounted: function mounted() {
-    this.initChatLog();
+    var _this = this;
+    this.room = this.tablist[0].room;
+    this.messages = this.all_messages.filter(function (item) {
+      return item.room === _this.room;
+    });
+    this.setScrollTop();
+    uni.connectSocket({
+      url: 'ws://127.0.0.1:9000',
+      data: {
+        'usr_id': '1234567890'
+      },
+      header: {
+        'content-type': 'application/json'
+      }
+    });
+    uni.onSocketMessage(function (res) {
+      console.log("received data ".concat(res.data));
+      console.log("connected sucessfully");
+    });
   },
   onLoad: function onLoad() {},
   methods: {
     // 获取后端数据流显示
     stream_read: function stream_read() {
-      var _this = this;
+      uni.onSocketOpen(function (res) {
+        uni.sendSocketMessage({
+          data: ""
+        });
+      });
+    },
+    //常规请求
+    request_read: function request_read() {
+      var _this2 = this;
       //ping test
       uni.request({
         url: "http://127.0.0.1:8000/ping",
@@ -393,26 +436,25 @@ var _default = {
         method: "GET",
         success: function success(res) {
           var wenlen = 0;
-          _this.inputValue = '';
+          _this2.inputValue = '';
           //回复
           //修改做后一个message
-          var lastMessageIndex = _this.list.length - 1;
+          var lastMessageIndex = _this2.messages.length - 1;
           //this.list[lastMessageIndex].isResponding = true;
-
           var msg = res.data.text;
           //this.cache_msg(msg, res, 5);
-          _this.timer = setInterval(function () {
+          _this2.timer = setInterval(function () {
             //取到wendata的第wenlen位
-            _this.inputValue = msg.substr(0, wenlen);
-            _this.list[lastMessageIndex].content = _this.inputValue;
+            _this2.inputValue = msg.substr(0, wenlen);
+            _this2.messages[lastMessageIndex].content = _this2.inputValue;
             //wenlen大于wendata的长度，停止计时器
             if (wenlen < msg.length) {
-              wenlen++;
+              ++wenlen;
             } else {
-              clearInterval(_this.timer);
-              _this.inputValue = '';
-              _this.list[lastMessageIndex].isResponding = false;
-              console.log("messages: ".concat(_this.list));
+              clearInterval(_this2.timer);
+              _this2.inputValue = '';
+              _this2.messages[lastMessageIndex].isResponding = false;
+              console.log("messages: ".concat(_this2.messages));
             }
           }, 50);
         },
@@ -431,7 +473,13 @@ var _default = {
     to_select: function to_select(room) {
       this.room = room;
       console.log('选择', this.room);
-      //this.$refs.popup.close();
+      this.messages = this.all_messages.filter(function (item) {
+        return item.room === room;
+      });
+      this.chat_name = this.tablist.find(function (item) {
+        return item.room === room;
+      }).value;
+      this.setScrollTop();
     },
     to_delete: function to_delete(index) {
       var that = this;
@@ -475,12 +523,21 @@ var _default = {
     },
     //上一个，下一个
     to_up: function to_up(item) {
+      //item.current_msg_index;
+      if (item.current_msg_index === 0) {
+        return;
+      }
+      item.content = item.cached_msg[--item.current_msg_index];
       uni.showToast({
         title: '上一个',
         icon: 'none'
       });
     },
     to_down: function to_down(item) {
+      if (item.current_msg_index === item.cached_msg.length - 1) {
+        return;
+      }
+      item.content = item.cached_msg[++item.current_msg_index];
       uni.showToast({
         title: '下一个',
         icon: 'none'
@@ -510,17 +567,17 @@ var _default = {
       this.$refs.inputDialog.open();
     },
     dialogInputConfirm: function dialogInputConfirm(val) {
-      var _this2 = this;
+      var _this3 = this;
       uni.showLoading({
         title: '修改中'
       });
       setTimeout(function () {
         uni.hideLoading();
         console.log(val);
-        _this2.value = val;
-        _this2.tablist[_this2.xiugai].value = val;
+        _this3.value = val;
+        _this3.tablist[_this3.xiugai].value = val;
         // 关闭窗口后，恢复默认内容
-        _this2.$refs.inputDialog.close();
+        _this3.$refs.inputDialog.close();
       }, 1000);
     },
     change: function change(e) {
@@ -538,7 +595,7 @@ var _default = {
         content: '请问是否删除',
         success: function success(res) {
           if (res.confirm) {
-            that.list.splice(index, that.list.length);
+            that.messages.splice(index, that.messages.length);
           } else if (res.cancel) {
             console.log('用户点击取消');
           }
@@ -549,80 +606,82 @@ var _default = {
       this.inputValue = e.detail.value;
     },
     send_right: function send_right() {
+      var _this4 = this;
       this.now = _currentDate.default.getDate();
       console.log(this.now);
       var message = {
         content: this.inputValue,
-        isMe: true,
         target: "blue",
-        isResponding: false,
         room: this.room,
         avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg' // 自己的头像,
       };
 
-      this.list = this.list.concat([message]);
+      this.all_messages = this.all_messages.concat([message]);
+      this.messages = this.all_messages.filter(function (item) {
+        return item.room === _this4.room;
+      });
       this.inputValue = "";
       this.setScrollTop();
     },
     send_left: function send_left(isResponse) {
+      var _this5 = this;
       // TODO: In response mode, display content in cached_msg.
       var message = {
         content: this.inputValue,
-        cached_msg: [],
-        current_msg_index: 0,
-        isMe: false,
         target: "red",
         isResponse: isResponse,
         room: this.room,
         avatar: '/static/logo.png',
-        up_or_down: null
+        up_or_down: null,
+        cached_msg: [],
+        current_msg_index: 0
       };
-      this.list = this.list.concat([message]);
-      if (this.inputValue == "") {
+      this.all_messages = this.all_messages.concat([message]);
+      this.messages = this.all_messages.filter(function (item) {
+        return item.room === _this5.room;
+      });
+      if (this.inputValue === "") {
         console.log("Call LLM");
         message.isResponse = true;
         message.isResponding = true;
-        this.stream_read();
+        this.request_read();
       }
       this.inputValue = "";
       this.setScrollTop();
     },
-    initChatLog: function initChatLog() {
-      var _this3 = this;
-      setTimeout(function () {
-        _this3.list = [];
-      }, 500);
+    send_prompt: function send_prompt() {
+      var _this6 = this;
+      var message = {
+        content: this.inputValue,
+        target: "prompt-box",
+        isResponse: false,
+        isResponding: false,
+        room: this.room
+      };
+      this.all_messages = this.all_messages.concat([message]);
+      this.messages = this.all_messages.filter(function (item) {
+        return item.room === _this6.room;
+      });
+      this.inputValue = "";
+      this.setScrollTop();
+      // ...
+      this.promptMode = false;
     },
     setScrollTop: function setScrollTop() {
-      var _this4 = this;
+      var _this7 = this;
       this.$nextTick(function () {
         var scrollView = uni.createSelectorQuery().select('.scroll-view');
         scrollView.fields({
           size: true
         }, function (data) {
           var height = data.height;
-          _this4.scrollHeight = height;
+          _this7.scrollHeight = height;
         }).exec();
       });
     },
     add_prompt: function add_prompt() {
       // change the function of button.
       this.promptMode = !this.promptMode;
-    },
-    send_prompt: function send_prompt() {
-      var message = {
-        content: this.inputValue,
-        isMe: false,
-        target: "prompt-box",
-        isResponse: false,
-        isResponding: false,
-        room: this.room
-      };
-      this.list = this.list.concat([message]);
-      this.inputValue = "";
-      this.setScrollTop();
-      // ...
-      this.promptMode = false;
     }
   }
 };

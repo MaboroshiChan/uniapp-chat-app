@@ -12,14 +12,12 @@
 				</view> -->
 			</view>
 			<view class="" style="width: 500rpx;text-align: center;font-size: 36rpx;font-weight: 600;">
-				智能聊天
+				{{ chat_name }}
 			</view>
 			<view class="" style="width: 150rpx;font-size: 60rpx;text-align: right;">
 				<!-- <text @click="topage('/pages/add/add')">+</text> -->
 			</view>
 		</view>
-
-
 
 		<view>
 			<!-- 普通弹窗 -->
@@ -84,24 +82,24 @@
 				
 				:scroll-top="scrollHeight">
 				<view class="scroll-view">
-					<view class="news-box" v-show="room == item.room" v-for="(item, index) in list" :key="index">
+					<view class="news-box" v-show="room === item.room" v-for="(item, index) in messages" :key="index">
 
-						<image class="avatar" :class="[item.isMe ? 'is-me' : 'avatar-right']" :src="item.avatar"
+						<image class="avatar" :class="[item.target === 'blue' ? 'is-me' : 'avatar-right']" :src="item.avatar"
 							mode="aspectFill" @longpress="to_delete_message(index)" v-if="item.target != 'prompt-box'"></image>
 
 						<view class="message-box" style="position: relative;"
-							:class="item.target == 'prompt-box' ? 'is-prompt' : { 'is-me': item.isMe }" @click="to_copy(item.content)">
+							:class="item.target === 'prompt-box' ? 'is-prompt' : { 'is-me': item.target === 'blue' }" @click="to_copy(item.content)">
 
 							<view class="message" :class="item.target">
 
 								<view class="content-box">
-									{{ item.content || '' }}<span class="cursor" v-if="item.isResponse && item.isResponding"></span>
+									{{ item.content || item.cached_msg[0] || '' }}<span class="cursor" v-if="item.isResponse && item.isResponding"></span>
 								</view>
 
 								<view class=""
-									style="display: flex;justify-content: flex-end;align-items: center;color: #555" v-if="item.target!= 'prompt-box'">
+									style="display: flex;justify-content: flex-end;align-items: center;color: #555" v-if="item.target!='prompt-box'">
 									<view class="switch" style="display: flex;justify-content: flex-start;align-items: center;"
-										@click.stop="to_up(item)" v-if="item.target == 'red' && item.isResponse">
+										@click.stop="to_up(item)" v-if="item.target === 'red' && item.isResponse">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/3.png"
 											mode="widthFix"></image>
 										<text class="">
@@ -113,12 +111,9 @@
 										@click.stop="to_delete_message(index)">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/0/2.png"
 											mode="widthFix"></image>
-										<text class="">
-											删除
-										</text>
 									</view>
 									<view class="switch" style="display: flex;justify-content: flex-start;align-items: center;"
-										@click.stop="to_down(item)" v-if="item.target == 'red' && item.isResponse">
+										@click.stop="to_down(item)" v-if="item.target === 'red' && item.isResponse">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/4.png"
 											mode="widthFix"></image>
 										<text class="">
@@ -128,7 +123,7 @@
 								</view>
 								<view class=""
 									style="display: flex;justify-content: space-around;align-items: center;color: #555;width: 200rpx;margin: 20rpx auto 0;" 
-									v-if="item.target == 'red' && item.isResponse">
+									v-if="item.target === 'red' && item.isResponse">
 									<view class="" style="display: flex;justify-content: flex-start;align-items: center;margin-right: 40rpx;"
 										@click.stop="to_zan(item.content)">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/1.png"
@@ -142,8 +137,6 @@
 									</view>
 								</view>
 							</view>
-							
-
 						</view>
 					</view>
 					<view style="display: flex;justify-content: center;align-items: center;" class="prompt"
@@ -155,7 +148,7 @@
 
 			<view class="base-btn">
 				<view class="base-con unify-flex">
-					<view class="send-input1" @tap="send_left(false)">{{(inputValue == '') ? '生成回复' : '发送'}}</view>
+					<view class="send-input1" @tap="send_left(false)">{{(inputValue === '') ? '生成回复' : '发送'}}</view>
 
 					<input class="input-text" type="text" :value="inputValue" placeholder="输入聊天记录" @input="getInput">
 
@@ -174,10 +167,44 @@ export default {
 	data() {
 		return {
 			type: 'center',
+			chat_name: '新聊天',
 			value: '',
 			xiugai: '',
 			inputValue: '',
-			list: [],
+			all_messages: [
+				{
+					content: "你好嘛",
+					isMe: true,
+					target: "blue",
+					room: 1535789553697,
+					avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
+				},
+				{
+					content: "你是谁嘛",
+					isMe: true,
+					target: "blue",
+					room: 1535789553697,
+					avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
+				},
+				{
+					content: "",
+					isMe: false,
+					target: "red",
+					isResponse: true,
+					room: 1535789553697,
+					avatar: '/static/logo.png',
+					up_or_down: null,
+					cached_msg: [
+						"你很好吗?",
+						"这是什么呢",
+						"好奇怪呢",
+						"我也很好奇",
+						"你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛你好嘛"
+					],
+					current_msg_index: 0
+				}
+			],
+			messages: [],
 			image: '',
 			scrollHeight: 0,
 			now: '',
@@ -188,10 +215,8 @@ export default {
 				room: 1535789553697,
 				value: '演示1'
 			}],
-			room: 0,
 			promptMode: false,
-
-
+			room: 0,
 			wendata: 'This is for a test purpose, you can change it to any value',
 			wen: ''
 		}
@@ -208,7 +233,23 @@ export default {
 		}
 	},
 	mounted() {
-		this.initChatLog();
+		this.room = this.tablist[0].room
+		this.messages = this.all_messages.filter(item => item.room === this.room);
+		this.setScrollTop();
+		uni.connectSocket({
+			url: 'ws://127.0.0.1:9000',
+			data: {
+				'usr_id': '1234567890'
+			},
+			header: {
+				'content-type': 'application/json'
+			}
+		});
+		
+		uni.onSocketMessage(res=>{
+			console.log(`received data ${res.data}`);
+			console.log("connected sucessfully");
+		});
 	},
 	onLoad() {
 
@@ -217,7 +258,17 @@ export default {
 	methods: {
 		
 		// 获取后端数据流显示
-		stream_read() {
+		stream_read(){
+			uni.onSocketOpen(res => {
+				uni.sendSocketMessage({
+					data: "",
+					
+				})
+			});
+		},
+		
+		//常规请求
+		request_read() {
 			//ping test
 			uni.request({
 				url: "http://127.0.0.1:8000/ping",
@@ -229,27 +280,26 @@ export default {
 					this.inputValue = '';
 					//回复
 					//修改做后一个message
-					let lastMessageIndex = this.list.length - 1;
+					let lastMessageIndex = this.messages.length - 1;
 					//this.list[lastMessageIndex].isResponding = true;
-					
 					const msg = res.data.text;
 					//this.cache_msg(msg, res, 5);
 					this.timer = setInterval(() => {
 						//取到wendata的第wenlen位
 						this.inputValue = msg.substr(0, wenlen);
-						this.list[lastMessageIndex].content = this.inputValue;
+						this.messages[lastMessageIndex].content = this.inputValue;
 						//wenlen大于wendata的长度，停止计时器
 						if (wenlen < msg.length) {
-							wenlen++;
+							++wenlen;
 						} else {
 							clearInterval(this.timer);
 							this.inputValue = '';
-							this.list[lastMessageIndex].isResponding = false;
-							console.log(`messages: ${this.list}`);
+							this.messages[lastMessageIndex].isResponding = false;
+							console.log(`messages: ${this.messages}`);
 						}
 					}, 50);
 				},
-				fail: (err)=>{
+				fail: (err) => {
 					console.error(err);
 					console.log("请求失败");
 				}
@@ -265,9 +315,11 @@ export default {
 		},
 		
 		to_select(room) {
-			this.room = room
+			this.room = room;
 			console.log('选择', this.room);
-			//this.$refs.popup.close();
+			this.messages = this.all_messages.filter(item => item.room === room);
+			this.chat_name = this.tablist.find(item => item.room === room).value
+			this.setScrollTop();
 		},
 		to_delete(index) {
 			let that = this
@@ -313,6 +365,12 @@ export default {
 		},
 		//上一个，下一个
 		to_up(item){
+			//item.current_msg_index;
+			if(item.current_msg_index === 0){
+				return;
+			}
+			
+			item.content = item.cached_msg[--item.current_msg_index];
 			uni.showToast({
 				title: '上一个',
 				icon:'none'
@@ -320,6 +378,11 @@ export default {
 		},
 		
 		to_down(item){
+			if(item.current_msg_index === item.cached_msg.length - 1){
+				return;
+			}
+			
+			item.content = item.cached_msg[++item.current_msg_index];
 			uni.showToast({
 				title: '下一个',
 				icon:'none'
@@ -383,7 +446,7 @@ export default {
 				content: '请问是否删除',
 				success: function (res) {
 					if (res.confirm) {
-						that.list.splice(index, that.list.length);
+						that.messages.splice(index, that.messages.length);
 					} else if (res.cancel) {
 						console.log('用户点击取消');
 					}
@@ -400,13 +463,12 @@ export default {
 			console.log(this.now)
 			var message = {
 				content: this.inputValue,
-				isMe: true,
 				target: "blue",
-				isResponding: false,
 				room: this.room,
 				avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
 			};
-			this.list = this.list.concat([message]);
+			this.all_messages = this.all_messages.concat([message]);
+			this.messages = this.all_messages.filter(item => item.room === this.room);
 			this.inputValue = "";
 			this.setScrollTop();
 		},
@@ -414,30 +476,41 @@ export default {
 			// TODO: In response mode, display content in cached_msg.
 			var message = {
 				content: this.inputValue,
-				cached_msg: [],
-				current_msg_index: 0,
-				isMe: false,
 				target: "red",
 				isResponse: isResponse,
 				room: this.room,
 				avatar: '/static/logo.png',
-				up_or_down: null
+				up_or_down: null,
+				cached_msg: [],
+				current_msg_index: 0
 			};
-			this.list = this.list.concat([message]);
-			if(this.inputValue == ""){
+			this.all_messages = this.all_messages.concat([message]);
+			this.messages = this.all_messages.filter(item => item.room === this.room);
+			if(this.inputValue === ""){
 				console.log("Call LLM");
 				message.isResponse = true;
 				message.isResponding = true;
-				this.stream_read();
+				this.request_read();
 			}
 			this.inputValue = "";
 			this.setScrollTop();
 		},
-		initChatLog() {
-			setTimeout(() => {
-				this.list = []
-			}, 500)
 
+		send_prompt() {
+			var message = {
+				content: this.inputValue,
+				target: "prompt-box",
+				isResponse: false,
+				isResponding: false,
+				room: this.room,	
+			};
+			this.all_messages = this.all_messages.concat([message]);
+			this.messages = this.all_messages.filter(item => item.room === this.room);
+
+			this.inputValue = "";
+			this.setScrollTop();
+			// ...
+			this.promptMode = false;
 		},
 
 		setScrollTop() {
@@ -455,23 +528,8 @@ export default {
 		add_prompt() {
 			// change the function of button.
 			this.promptMode = !(this.promptMode);
-		},
-
-		send_prompt() {
-			var message = {
-				content: this.inputValue,
-				isMe: false,
-				target: "prompt-box",
-				isResponse: false,
-				isResponding: false,
-				room: this.room,	
-			};
-			this.list = this.list.concat([message])
-			this.inputValue = "";
-			this.setScrollTop();
-			// ...
-			this.promptMode = false;
-		},
+		}
+		
 	}
 }
 </script>
