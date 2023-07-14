@@ -78,27 +78,29 @@
 
 		<view class="">
 
-			<scroll-view scroll-y="true" class="scroll-box"
-				
-				:scroll-top="scrollHeight">
+			<scroll-view scroll-y="true" class="scroll-box" :scroll-top="scrollHeight">
 				<view class="scroll-view">
 					<view class="news-box" v-show="room === item.room" v-for="(item, index) in messages" :key="index">
 
-						<image class="avatar" :class="[item.target === 'blue' ? 'is-me' : 'avatar-right']" :src="item.avatar"
-							mode="aspectFill" @longpress="to_delete_message(index)" v-if="item.target != 'prompt-box'"></image>
+						<image class="avatar" :class="[item.target === 'blue' ? 'is-me' : 'avatar-right']"
+							:src="item.avatar" mode="aspectFill" @longpress="to_delete_message(index)"
+							v-if="item.target != 'prompt-box'"></image>
 
 						<view class="message-box" style="position: relative;"
-							:class="item.target === 'prompt-box' ? 'is-prompt' : { 'is-me': item.target === 'blue' }" @click="to_copy(item.content)">
+							:class="item.target === 'prompt-box' ? 'is-prompt' : { 'is-me': item.target === 'blue' }"
+							@click="to_copy(item.content)">
 
 							<view class="message" :class="item.target">
 
 								<view class="content-box">
-									{{ item.content || item.cached_msg[0] || '' }}<span class="cursor" v-if="item.isResponse && item.isResponding"></span>
+									{{ item.content || '' }} <span class="cursor" v-if="item.isResponding"></span>
 								</view>
 
 								<view class=""
-									style="display: flex;justify-content: flex-end;align-items: center;color: #555" v-if="item.target!='prompt-box'">
-									<view class="switch" style="display: flex;justify-content: flex-start;align-items: center;"
+									style="display: flex;justify-content: flex-end;align-items: center;color: #555"
+									v-if="item.target != 'prompt-box'">
+									<view class="switch"
+										style="display: flex;justify-content: flex-start;align-items: center;"
 										@click.stop="to_up(item)" v-if="item.target === 'red' && item.isResponse">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/3.png"
 											mode="widthFix"></image>
@@ -112,7 +114,8 @@
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/0/2.png"
 											mode="widthFix"></image>
 									</view>
-									<view class="switch" style="display: flex;justify-content: flex-start;align-items: center;"
+									<view class="switch"
+										style="display: flex;justify-content: flex-start;align-items: center;"
 										@click.stop="to_down(item)" v-if="item.target === 'red' && item.isResponse">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/4.png"
 											mode="widthFix"></image>
@@ -122,15 +125,17 @@
 									</view>
 								</view>
 								<view class=""
-									style="display: flex;justify-content: space-around;align-items: center;color: #555;width: 200rpx;margin: 20rpx auto 0;" 
+									style="display: flex;justify-content: space-around;align-items: center;color: #555;width: 200rpx;margin: 20rpx auto 0;"
 									v-if="item.target === 'red' && item.isResponse">
-									<view class="" style="display: flex;justify-content: flex-start;align-items: center;margin-right: 40rpx;"
+									<view class=""
+										style="display: flex;justify-content: flex-start;align-items: center;margin-right: 40rpx;"
 										@click.stop="to_zan(item.content)">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/1.png"
 											mode="widthFix"></image>
 									</view>
-									
-									<view class="" style="display: flex;justify-content: flex-start;align-items: center;margin-right: 20rpx;"
+
+									<view class=""
+										style="display: flex;justify-content: flex-start;align-items: center;margin-right: 20rpx;"
 										@click.stop="to_cai(item.content)">
 										<image style="width: 30rpx;margin-right: 10rpx;" src="../../static/1/2.png"
 											mode="widthFix"></image>
@@ -148,7 +153,7 @@
 
 			<view class="base-btn">
 				<view class="base-con unify-flex">
-					<view class="send-input1" @tap="send_left(false)">{{(inputValue === '') ? '生成回复' : '发送'}}</view>
+					<view class="send-input1" @tap="send_left(false)">{{ (inputValue === '') ? '生成回复' : '发送' }}</view>
 
 					<input class="input-text" type="text" :value="inputValue" placeholder="输入聊天记录" @input="getInput">
 
@@ -175,21 +180,21 @@ export default {
 				{
 					content: "你好嘛",
 					isMe: true,
-					target: "blue",
+					target: 'red',
 					room: 1535789553697,
 					avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
 				},
 				{
 					content: "你是谁嘛",
 					isMe: true,
-					target: "blue",
+					target: 'red',
 					room: 1535789553697,
 					avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
 				},
 				{
 					content: "",
 					isMe: false,
-					target: "red",
+					target: 'blue',
 					isResponse: true,
 					room: 1535789553697,
 					avatar: '/static/logo.png',
@@ -211,7 +216,7 @@ export default {
 			tablist: [{
 				room: 1535789553696,
 				value: '新聊天'
-			},{
+			}, {
 				room: 1535789553697,
 				value: '演示1'
 			}],
@@ -236,84 +241,119 @@ export default {
 		this.room = this.tablist[0].room
 		this.messages = this.all_messages.filter(item => item.room === this.room);
 		this.setScrollTop();
-		uni.connectSocket({
-			url: 'ws://127.0.0.1:9000',
-			data: {
-				'usr_id': '1234567890'
-			},
-			header: {
-				'content-type': 'application/json'
-			}
-		});
-		
-		uni.onSocketMessage(res=>{
-			console.log(`received data ${res.data}`);
-			console.log("connected sucessfully");
-		});
+		/**
+		 * 1. 连接websocket
+		 * 2. 发送消息
+		 * 3. 接收消息
+		 */
+		/**
+			uni.connectSocket({
+				url: 'ws://127.0.0.1:9000',
+				header: {
+					'content-type': 'application/json'
+				},
+				fail: (res) => {
+					console.log("失败")
+					console.log(res)
+				}
+			});
+			
+			uni.onSocketMessage(res=>{
+				console.log(`received data ${res.data}`);
+				console.log("connected sucessfully");
+			});
+		*/
 	},
 	onLoad() {
 
 	},
-	
+
 	methods: {
-		
+
 		// 获取后端数据流显示
-		stream_read(){
+		stream_read() {
 			uni.onSocketOpen(res => {
 				uni.sendSocketMessage({
 					data: "",
-					
+
 				})
 			});
 		},
-		
+
+		prepare_data(is_stream) {
+			return {
+				chat_id: this.room,
+				messages: this.messages.map(item => Object({
+					text: item.content,
+					sender: item.target == 'red' ? 'Chris' : '女生',
+					stream: is_stream
+				}))
+			}
+		},
 		//常规请求
-		request_read() {
+		request_read(multiple_requests) {
 			//ping test
 			uni.request({
-				url: "http://127.0.0.1:8000/ping",
+				url: "http://127.0.0.1:8000/api/gpt3",
 				timeout: 15000,
-				method: "GET",
+				method: "POST",
+				data: this.prepare_data(true),
 				success: (res) => {
-					
-					var wenlen = 0;
+					const msgs = res.data.split('\n').slice(0, -1).map(s => JSON.parse(s));
+					let len = 0;
 					this.inputValue = '';
-					//回复
-					//修改做后一个message
-					let lastMessageIndex = this.messages.length - 1;
-					//this.list[lastMessageIndex].isResponding = true;
-					const msg = res.data.text;
-					//this.cache_msg(msg, res, 5);
+					const lastMessageIndex = this.messages.length - 1;
+
 					this.timer = setInterval(() => {
-						//取到wendata的第wenlen位
-						this.inputValue = msg.substr(0, wenlen);
-						this.messages[lastMessageIndex].content = this.inputValue;
-						//wenlen大于wendata的长度，停止计时器
-						if (wenlen < msg.length) {
-							++wenlen;
-						} else {
-							clearInterval(this.timer);
-							this.inputValue = '';
+						this.messages[lastMessageIndex].content += msgs[len]['message']['text'];
+						if (len < msgs.length - 1) {
+							++len;
+						}
+						else {
 							this.messages[lastMessageIndex].isResponding = false;
-							console.log(`messages: ${this.messages}`);
+							this.inputValue = '';
+							this.messages[lastMessageIndex]
+								.cached_msg
+								.push(this.messages[lastMessageIndex].content);
+							clearInterval(this.timer);
 						}
 					}, 50);
+					this.messages[lastMessageIndex].isResponding = false;
 				},
 				fail: (err) => {
+					console.log("请求失败, 原因: ");
 					console.error(err);
-					console.log("请求失败");
 				}
 			});
-			//声明一个变量，用来监听要分割的长度
-			
-		},
-		
+			if(multiple_requests) {
+				uni.request({
+					url: "http://127.0.0.1:8000/api/gpt3",
+					timeout: 15000,
+					method: "POST",
+					data: this.prepare_data(false),
+					success: res => {
+						 res.data
+							.split('\n')
+							.filter(s=>s.length > 1)
+							.forEach(s=>{
+								const lastMessageIndex = this.messages.length - 1;
+								this.messages[lastMessageIndex].cached_msg.push(s);
+							});
+					},
+					fails: (err) => {
+						console.log("请求失败, 原因: ");
+						console.error(err);
+					}
+				});
+			}
+		}, 
+
 		cache_msg(messge, res, n) {
-			for(let i = 0; i < n; ++i){
+			for (let i = 0; i < n; ++i) {
 				message.cached_msg.push(res.data.more_msg[i])
 			}
 		},
-		
+
 		to_select(room) {
 			this.room = room;
 			console.log('选择', this.room);
@@ -336,7 +376,7 @@ export default {
 				}
 			});
 		},
-		
+
 		to_copy(value) {
 			//提示模板
 			uni.setClipboardData({
@@ -364,45 +404,45 @@ export default {
 
 		},
 		//上一个，下一个
-		to_up(item){
+		to_up(item) {
 			//item.current_msg_index;
-			if(item.current_msg_index === 0){
+			if (item.current_msg_index === 0) {
 				return;
 			}
-			
+
 			item.content = item.cached_msg[--item.current_msg_index];
 			uni.showToast({
 				title: '上一个',
-				icon:'none'
+				icon: 'none'
 			})
 		},
-		
-		to_down(item){
-			if(item.current_msg_index === item.cached_msg.length - 1){
+
+		to_down(item) {
+			if (item.current_msg_index === item.cached_msg.length - 1) {
 				return;
 			}
-			
+
 			item.content = item.cached_msg[++item.current_msg_index];
 			uni.showToast({
 				title: '下一个',
-				icon:'none'
+				icon: 'none'
 			})
 		},
-		
-		to_zan(value){
+
+		to_zan(value) {
 			uni.showToast()
 			uni.showToast({
 				title: '谢谢反馈',
 				icon: 'none'
 			})
 		},
-		to_cai(value){
+		to_cai(value) {
 			uni.showToast({
 				title: '谢谢反馈',
 				icon: 'none'
 			})
 		},
-		
+
 		to_add() {
 			this.tablist.push({
 				room: Date.now(),
@@ -447,6 +487,16 @@ export default {
 				success: function (res) {
 					if (res.confirm) {
 						that.messages.splice(index, that.messages.length);
+						let all_msg_index = 0;
+						for (let i = 0; i < that.all_messages.length; i++) {
+							if (that.all_messages[i].room === that.room) {
+								if (all_msg_index === index) {
+									that.all_messages.splice(i, that.all_messages.length);
+									break;
+								}
+								++all_msg_index;
+							}
+						}
 					} else if (res.cancel) {
 						console.log('用户点击取消');
 					}
@@ -459,24 +509,26 @@ export default {
 		},
 
 		send_right() {
-			this.now = currentDate.getDate()
-			console.log(this.now)
-			var message = {
-				content: this.inputValue,
-				target: "blue",
-				room: this.room,
-				avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
-			};
-			this.all_messages = this.all_messages.concat([message]);
-			this.messages = this.all_messages.filter(item => item.room === this.room);
-			this.inputValue = "";
-			this.setScrollTop();
+			if (this.inputValue && this.inputValue != '') {
+				this.now = currentDate.getDate()
+				console.log(this.now)
+				var message = {
+					content: this.inputValue,
+					target: 'blue',
+					room: this.room,
+					avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg', // 自己的头像,
+				};
+				this.all_messages = this.all_messages.concat([message]);
+				this.messages = this.all_messages.filter(item => item.room === this.room);
+				this.inputValue = "";
+				this.setScrollTop();
+			}
 		},
 		send_left(isResponse) {
 			// TODO: In response mode, display content in cached_msg.
 			var message = {
 				content: this.inputValue,
-				target: "red",
+				target: 'red',
 				isResponse: isResponse,
 				room: this.room,
 				avatar: '/static/logo.png',
@@ -486,7 +538,7 @@ export default {
 			};
 			this.all_messages = this.all_messages.concat([message]);
 			this.messages = this.all_messages.filter(item => item.room === this.room);
-			if(this.inputValue === ""){
+			if (this.inputValue === "") {
 				console.log("Call LLM");
 				message.isResponse = true;
 				message.isResponding = true;
@@ -502,7 +554,7 @@ export default {
 				target: "prompt-box",
 				isResponse: false,
 				isResponding: false,
-				room: this.room,	
+				room: this.room,
 			};
 			this.all_messages = this.all_messages.concat([message]);
 			this.messages = this.all_messages.filter(item => item.room === this.room);
@@ -529,7 +581,7 @@ export default {
 			// change the function of button.
 			this.promptMode = !(this.promptMode);
 		}
-		
+
 	}
 }
 </script>
@@ -705,7 +757,7 @@ export default {
 }
 
 
-.scroll-box{
+.scroll-box {
 	height: 100vh;
 	// background-color: #FFB967;
 	padding: 120rpx 0 130rpx;
@@ -773,10 +825,10 @@ export default {
 	align-items: center;
 	// background-color: blue;
 }
+
 .cursor {
 	display: inline-block;
 	width: 5px;
 	height: 15px;
 	background-color: #000;
-  }
-</style>
+}</style>

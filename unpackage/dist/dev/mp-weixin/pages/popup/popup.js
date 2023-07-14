@@ -347,19 +347,19 @@ var _default = {
       all_messages: [{
         content: "你好嘛",
         isMe: true,
-        target: "blue",
+        target: 'red',
         room: 1535789553697,
         avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg' // 自己的头像,
       }, {
         content: "你是谁嘛",
         isMe: true,
-        target: "blue",
+        target: 'red',
         room: 1535789553697,
         avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg' // 自己的头像,
       }, {
         content: "",
         isMe: false,
-        target: "red",
+        target: 'blue',
         isResponse: true,
         room: 1535789553697,
         avatar: '/static/logo.png',
@@ -404,11 +404,12 @@ var _default = {
     this.setScrollTop();
     uni.connectSocket({
       url: 'ws://127.0.0.1:9000',
-      data: {
-        'usr_id': '1234567890'
-      },
       header: {
         'content-type': 'application/json'
+      },
+      fail: function fail(res) {
+        console.log("失败");
+        console.log(res);
       }
     });
     uni.onSocketMessage(function (res) {
@@ -426,6 +427,17 @@ var _default = {
         });
       });
     },
+    prepare_data: function prepare_data() {
+      return {
+        chat_id: this.room,
+        messages: this.messages.map(function (item) {
+          return Object({
+            text: item.content,
+            sender: item.target
+          });
+        })
+      };
+    },
     //常规请求
     request_read: function request_read() {
       var _this2 = this;
@@ -433,7 +445,8 @@ var _default = {
       uni.request({
         url: "http://127.0.0.1:8000/ping",
         timeout: 15000,
-        method: "GET",
+        method: "POST",
+        data: this.prepare_data(),
         success: function success(res) {
           var wenlen = 0;
           _this2.inputValue = '';
@@ -459,8 +472,8 @@ var _default = {
           }, 50);
         },
         fail: function fail(err) {
+          console.log("请求失败, 原因: ");
           console.error(err);
-          console.log("请求失败");
         }
       });
       //声明一个变量，用来监听要分割的长度
@@ -611,7 +624,7 @@ var _default = {
       console.log(this.now);
       var message = {
         content: this.inputValue,
-        target: "blue",
+        target: 'red',
         room: this.room,
         avatar: 'https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F0826%2F6def4faej00qygdfw009kd200u001hcg00u001hc.jpg&thumbnail=660x2147483647&quality=80&type=jpg' // 自己的头像,
       };
@@ -628,7 +641,7 @@ var _default = {
       // TODO: In response mode, display content in cached_msg.
       var message = {
         content: this.inputValue,
-        target: "red",
+        target: 'blue',
         isResponse: isResponse,
         room: this.room,
         avatar: '/static/logo.png',
